@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="chat-room-body">
+    <div class="chat-app">
+        <!-- Sidebar -->
+        <aside class="chat-sidebar">
+            <div class="sidebar-header">
+                <a href="/" class="logo">
+                    <i class="fas fa-comments"></i>
+                    <span>Lynx Chat</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-header">
+                    <span>Your Rooms</span>
+                    <a href="/chat/create-room" class="btn-icon" title="Create Room">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                </div>
+                <div class="room-list">
+                    <% userRooms.forEach(r => { %>
+                        <a href="/chat/room/<%= r._id %>" class="room-item <%= r._id.toString() === room._id.toString() ? 'active' : '' %>">
+                            <span class="room-icon">#</span>
+                            <span class="room-name"><%= r.name %></span>
+                        </a>
+                    <% }); %>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <a href="/chat/public-rooms" class="sidebar-link">
+                    <i class="fas fa-globe"></i>
+                    Explore Public Rooms
+                </a>
+            </div>
+
+            <div class="sidebar-user">
+                <img src="<%= user.avatar %>" alt="<%= user.username %>" class="user-avatar">
+                <span class="username"><%= user.username %></span>
+                <a href="/auth/logout" class="btn-icon" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-main">
+            <!-- Chat Header -->
+            <header class="chat-header">
+                <div class="chat-header-info">
+                    <h2><span class="hash">#</span> <%= room.name %></h2>
+                    <p class="room-desc"><%= room.description || 'No description' %></p>
+                </div>
+                <div class="chat-header-actions">
+                    <button class="btn btn-primary btn-sm" id="openGameSelect" title="Play Game">
+                        <i class="fas fa-gamepad"></i>
+                        Play Game
+                    </button>
+                    <button class="btn-icon" id="toggleMembers" title="Members">
+                        <i class="fas fa-users"></i>
+                        <span class="member-count"><%= room.members.length %></span>
+                    </button>
+                    <form action="/chat/leave-room/<%= room._id %>" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-outline btn-sm" onclick="return confirm('Are you sure you want to leave this room?')">
+                            <i class="fas fa-door-open"></i>
+                            Leave
+                        </button>
+                    </form>
+                </div>
+            </header>
+
+            <!-- Messages Container -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="messages-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Loading messages...
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                <span class="typing-text"></span>
+            </div>
+
+            <!-- Message Input -->
+            <form class="chat-input-form" id="chatForm">
+                <div class="chat-input-container">
+                    <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off" maxlength="2000">
+                    <button type="submit" class="btn btn-primary btn-send">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+        </main>
+
+        <!-- Members Sidebar -->
+        <aside class="members-sidebar" id="membersSidebar">
+            <div class="members-header">
+                <h3>Members (<%= room.members.length %>)</h3>
+                <button class="btn-icon" id="closeMembers">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="members-list">
+                <% room.members.forEach(member => { %>
+                    <div class="member-item" data-username="<%= member.username %>">
+                        <img src="<%= member.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(member.username) + '&background=6366f1&color=fff' %>" alt="<%= member.username %>" class="member-avatar">
+                        <span class="member-name"><%= member.username %></span>
+                        <% if (room.creator && room.creator._id && member._id.toString() === room.creator._id.toString()) { %>
+                            <span class="member-role owner">Owner</span>
+                        <% } %>
+                        <% if (member.username !== user.username) { %>
+                            <button class="btn-icon game-invite-btn" title="Invite to play" data-username="<%= member.username %>">
+                                <i class="fas fa-gamepad"></i>
+                            </button>
+                        <% } %>
+                    </div>
+                <% }); %>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Select Player Modal -->
+    <div class="modal" id="selectPlayerModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-gamepad"></i> Select Player to Challenge</h3>
+                <button class="btn-icon modal-close" id="closeSelectPlayerModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1rem; color: var(--text-secondary);">Choose someone to play X-O (Tic-Tac-Toe):</p>
+                <div class="player-select-list" id="playerSelectList">
+                    <% room.members.forEach(member => { %>
+                        <% if (member.username !== user.username) { %>
+                            <div class="player-select-item" data-username="<%= member.username %>">
+                                <img src="<%= member.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(member.username) + '&background=6366f1&color=fff' %>" alt="<%= member.username %>" class="player-select-avatar">
+                                <span class="player-select-name"><%= member.username %></span>
+                                <button class="btn btn-primary btn-sm invite-player-btn" data-username="<%= member.username %>">
+                                    <i class="fas fa-paper-plane"></i> Invite
+                                </button>
+                            </div>
+                        <% } %>
+                    <% }); %>
+                </div>
+                <% if (room.members.length <= 1) { %>
+                    <p style="text-align: center; color: var(--text-muted);">No other players in this room yet.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Invitation Modal -->
+    <div class="modal" id="gameInviteModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-gamepad"></i> Game Invitation</h3>
+                <button class="btn-icon modal-close" id="closeInviteModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="inviteMessage"></p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="declineInvite">Decline</button>
+                <button class="btn btn-primary" id="acceptInvite">Accept</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Board Modal -->
+    <div class="modal" id="gameModal" style="display: none;">
+        <div class="modal-content game-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-gamepad"></i> Tic-Tac-Toe</h3>
+                <button class="btn-icon modal-close" id="closeGameModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="game-info">
+                <div class="game-player player-x">
+                    <span class="symbol">X</span>
+                    <span class="player-name" id="playerX">Player X</span>
+                </div>
+                <div class="game-status" id="gameStatus">Your turn</div>
+                <div class="game-player player-o">
+                    <span class="symbol">O</span>
+                    <span class="player-name" id="playerO">Player O</span>
+                </div>
+            </div>
+            <div class="game-board" id="gameBoard">
+                <div class="game-cell" data-index="0"></div>
+                <div class="game-cell" data-index="1"></div>
+                <div class="game-cell" data-index="2"></div>
+                <div class="game-cell" data-index="3"></div>
+                <div class="game-cell" data-index="4"></div>
+                <div class="game-cell" data-index="5"></div>
+                <div class="game-cell" data-index="6"></div>
+                <div class="game-cell" data-index="7"></div>
+                <div class="game-cell" data-index="8"></div>
+            </div>
+            <div class="game-actions">
+                <button class="btn btn-outline" id="quitGame">
+                    <i class="fas fa-flag"></i> Forfeit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const roomId = '<%= room._id %>';
+        const currentUser = {
+            _id: '<%= user._id %>',
+            username: '<%= user.username %>',
+            avatar: '<%= user.avatar %>'
+        };
+    </script>
+    <script src="/js/chat.js"></script>
+</body>
+</html>

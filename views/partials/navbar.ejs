@@ -1,0 +1,28 @@
+<nav class="navbar">
+    <div class="navbar-brand">
+        <a href="/" class="logo">
+            <i class="fas fa-comments"></i>
+            <span>Lynx Chat</span>
+        </a>
+    </div>
+    <div class="navbar-menu">
+        <% if (user) { %>
+            <a href="/chat" class="nav-link">
+                <i class="fas fa-message"></i>
+                <span>Chat</span>
+            </a>
+            <a href="/chat/public-rooms" class="nav-link">
+                <i class="fas fa-globe"></i>
+                <span>Explore</span>
+            </a>
+            <div class="user-menu">
+                <img src="<%= user.avatar %>" alt="<%= user.username %>" class="user-avatar">
+                <span class="username"><%= user.username %></span>
+                <a href="/auth/logout" class="btn btn-outline btn-sm">Logout</a>
+            </div>
+        <% } else { %>
+            <a href="/auth/login" class="btn btn-outline">Login</a>
+            <a href="/auth/register" class="btn btn-primary">Sign Up</a>
+        <% } %>
+    </div>
+</nav>

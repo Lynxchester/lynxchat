@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+    
+    <main class="chat-home-page">
+        <div class="chat-home-container">
+            <div class="chat-home-header">
+                <h1>Your Chat Rooms</h1>
+                <a href="/chat/create-room" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Create Room
+                </a>
+            </div>
+
+            <% if (rooms.length === 0) { %>
+                <div class="empty-state">
+                    <i class="fas fa-comments"></i>
+                    <h2>No rooms yet</h2>
+                    <p>Create a new room or explore public rooms to start chatting!</p>
+                    <div class="empty-state-buttons">
+                        <a href="/chat/create-room" class="btn btn-primary">Create Room</a>
+                        <a href="/chat/public-rooms" class="btn btn-outline">Explore Rooms</a>
+                    </div>
+                </div>
+            <% } else { %>
+                <div class="rooms-grid">
+                    <% rooms.forEach(room => { %>
+                        <a href="/chat/room/<%= room._id %>" class="room-card">
+                            <div class="room-avatar">
+                                <img src="<%= room.getAvatar ? room.getAvatar() : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(room.name) + '&background=10b981&color=fff' %>" alt="<%= room.name %>">
+                            </div>
+                            <div class="room-info">
+                                <h3><%= room.name %></h3>
+                                <p class="room-description"><%= room.description || 'No description' %></p>
+                                <% if (room.lastMessage) { %>
+                                    <p class="room-last-message">
+                                        <strong><%= room.lastMessage.sender?.username %>:</strong>
+                                        <%= room.lastMessage.content.substring(0, 30) %><%= room.lastMessage.content.length > 30 ? '...' : '' %>
+                                    </p>
+                                <% } %>
+                            </div>
+                            <div class="room-meta">
+                                <span class="room-type <%= room.type %>">
+                                    <i class="fas fa-<%= room.type === 'public' ? 'globe' : 'lock' %>"></i>
+                                    <%= room.type %>
+                                </span>
+                            </div>
+                        </a>
+                    <% }); %>
+                </div>
+            <% } %>
+        </div>
+    </main>
+</body>
+</html>

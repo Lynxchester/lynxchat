@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Lynx Chat</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+    
+    <main class="landing-page">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Welcome to <span class="brand-text">Lynx Chat</span></h1>
+                <p class="hero-subtitle">Connect with friends, create rooms, and chat in real-time. Fast, secure, and easy to use.</p>
+                <div class="hero-buttons">
+                    <% if (user) { %>
+                        <a href="/chat" class="btn btn-primary btn-lg">
+                            <i class="fas fa-comments"></i>
+                            Start Chatting
+                        </a>
+                    <% } else { %>
+                        <a href="/auth/register" class="btn btn-primary btn-lg">
+                            <i class="fas fa-user-plus"></i>
+                            Get Started
+                        </a>
+                        <a href="/auth/login" class="btn btn-outline btn-lg">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Login
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="chat-preview">
+                    <div class="preview-header">
+                        <div class="preview-dot red"></div>
+                        <div class="preview-dot yellow"></div>
+                        <div class="preview-dot green"></div>
+                    </div>
+                    <div class="preview-messages">
+                        <div class="preview-message received">
+                            <span class="preview-avatar">👋</span>
+                            <div class="preview-bubble">Hey! Welcome to Lynx Chat!</div>
+                        </div>
+                        <div class="preview-message sent">
+                            <div class="preview-bubble">Thanks! This looks amazing!</div>
+                        </div>
+                        <div class="preview-message received">
+                            <span class="preview-avatar">🎉</span>
+                            <div class="preview-bubble">Let's start chatting!</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <h2>Why Choose Lynx Chat?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Real-time Messaging</h3>
+                    <p>Messages delivered instantly using WebSocket technology.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Group Chats</h3>
+                    <p>Create public or private rooms and chat with multiple people.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Secure</h3>
+                    <p>Your data is protected with secure authentication.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Responsive</h3>
+                    <p>Works perfectly on desktop, tablet, and mobile devices.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Lynx Chat. All rights reserved.</p>
+    </footer>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>
