@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Hash password before saving
+// Hash password before saving - Fixed for Mongoose 9+
 userSchema.pre('save', async function() {
     if (!this.isModified('password')) return;
     
