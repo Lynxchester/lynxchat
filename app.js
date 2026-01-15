@@ -65,6 +65,7 @@ const User = require('./models/User');
 const Room = require('./models/Room');
 
 const onlineUsers = new Map();
+const activeGames = new Map(); // Moved outside to share between all connections
 
 io.on('connection', (socket) => {
     const session = socket.request.session;
@@ -138,7 +139,6 @@ io.on('connection', (socket) => {
     });
 
     // ========== GAME SYSTEM ==========
-    const activeGames = new Map();
 
     // Send game invite
     socket.on('game-invite', (data) => {
@@ -276,6 +276,20 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log(`${username} disconnected`);
         onlineUsers.delete(socket.id);
+        
+        // Clean up any active games this player was in
+        for (const [gameId, game] of activeGames.entries()) {
+            if (game.players.X === socket.id || game.players.O === socket.id) {
+                const opponentSocketId = game.players.X === socket.id ? game.players.O : game.players.X;
+                game.winner = game.players.X === socket.id ? 'O' : 'X';
+                game.gameOver = true;
+                game.forfeit = true;
+                game.disconnected = true;
+                io.to(opponentSocketId).emit('game-update', { gameId, gameState: game });
+                activeGames.delete(gameId);
+            }
+        }
+        
         if (socket.currentRoom) {
             socket.to(socket.currentRoom).emit('user-left', { username });
         }

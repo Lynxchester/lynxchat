@@ -291,7 +291,9 @@ if (typeof io !== 'undefined' && typeof roomId !== 'undefined') {
 
         // Update status
         if (gameState.gameOver) {
-            if (gameState.forfeit) {
+            if (gameState.disconnected) {
+                gameStatus.textContent = '🎉 Opponent disconnected! You win!';
+            } else if (gameState.forfeit) {
                 gameStatus.textContent = gameState.winner === mySymbol ? 
                     '🎉 Opponent forfeited! You win!' : '😔 You forfeited!';
             } else if (gameState.winner) {
@@ -301,6 +303,9 @@ if (typeof io !== 'undefined' && typeof roomId !== 'undefined') {
                 gameStatus.textContent = "🤝 It's a draw!";
             }
             gameStatus.classList.add('game-over');
+            
+            // Reset game state after game ends
+            currentGame = null;
         } else {
             gameStatus.textContent = gameState.currentTurn === mySymbol ? 
                 "Your turn" : "Opponent's turn";
